@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personal iOS IPA Signer</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 24px; max-width: 720px; }
+    input, button { width: 100%; padding: 14px; margin: 8px 0 16px; font-size: 16px; box-sizing: border-box; }
+    button { font-weight: 700; }
+    .card { border: 1px solid #ddd; border-radius: 16px; padding: 18px; }
+    .warn { background: #fff7d6; padding: 12px; border-radius: 12px; }
+    a.install { display: block; padding: 16px; border-radius: 14px; border: 1px solid #111; text-align: center; text-decoration: none; font-weight: 800; margin-top: 14px; }
+    pre { white-space: pre-wrap; background: #f5f5f5; padding: 12px; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Personal iOS IPA Signer</h1>
+  <p class="warn">Use only for apps you own or are allowed to test. Your device UDID must be in the provisioning profile.</p>
+  <div class="card">
+    <label>Unsigned IPA</label>
+    <input id="ipa" type="file" accept=".ipa" />
+    <label>Apple .p12 certificate</label>
+    <input id="p12" type="file" accept=".p12" />
+    <label>.mobileprovision profile</label>
+    <input id="mobileprovision" type="file" accept=".mobileprovision" />
+    <label>P12 password</label>
+    <input id="password" type="password" placeholder="Certificate password" />
+    <label>App name</label>
+    <input id="appName" placeholder="My App" />
+    <label>Bundle ID optional</label>
+    <input id="bundleId" placeholder="com.yourname.app" />
+    <button id="signBtn">Sign IPA</button>
+    <div id="status"></div>
+  </div>
+<script>
+const $ = id => document.getElementById(id);
+$('signBtn').onclick = async () => {
+  $('status').innerHTML = 'Uploading and signing... keep this page open.';
+  const fd = new FormData();
+  if (!$('ipa').files[0] || !$('p12').files[0] || !$('mobileprovision').files[0]) {
+    $('status').innerHTML = 'Choose IPA, P12, and mobileprovision first.';
+    return;
+  }
+  fd.append('ipa', $('ipa').files[0]);
+  fd.append('p12', $('p12').files[0]);
+  fd.append('mobileprovision', $('mobileprovision').files[0]);
+  fd.append('password', $('password').value);
+  fd.append('appName', $('appName').value || 'Signed App');
+  fd.append('bundleId', $('bundleId').value || '');
+  try {
+    const r = await fetch('/api/sign', { method: 'POST', body: fd });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Signing failed');
+    $('status').innerHTML = `<a class="install" href="${data.installUrl}">Install on this iPad/iPhone</a><pre>${JSON.stringify(data, null, 2)}</pre>`;
+  } catch (e) {
+    $('status').innerHTML = `<pre>${e.message}</pre>`;
+  }
+};
+</script>
+</body>
+</html>
