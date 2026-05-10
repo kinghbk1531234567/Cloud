@@ -1,0 +1,16 @@
+{
+  "name": "cloud-ios-signer",
+  "version": "1.0.0",
+  "description": "Personal cloud iOS IPA signer using Render + Supabase. For apps you own and devices in your provisioning profile.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "latest",
+    "express": "latest",
+    "multer": "latest",
+    "nanoid": "latest"
+  }
+}
